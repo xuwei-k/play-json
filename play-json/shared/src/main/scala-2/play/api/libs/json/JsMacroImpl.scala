@@ -94,14 +94,14 @@ class JsMacroImpl(val c: blackbox.Context) {
     ctor.paramLists match {
       case List(term: TermSymbol) :: Nil => {
         def reader = q"""
-            implicitly[$json.Reads[${term.info}]].map { v =>
+            _root_.scala.Predef.implicitly[$json.Reads[${term.info}]].map { v =>
               new ${atpe}(v)
             }
           """
 
         def writer = q"""{
-            val fn = implicitly[_root_.play.api.libs.functional.ContravariantFunctor[$json.Writes]]
-            val w = implicitly[$json.Writes[${term.info}]]
+            val fn = _root_.scala.Predef.implicitly[_root_.play.api.libs.functional.ContravariantFunctor[$json.Writes]]
+            val w = _root_.scala.Predef.implicitly[$json.Writes[${term.info}]]
             fn.contramap[${term.info}, ${atpe}](w, _.${term.name.toTermName})
           }"""
 
@@ -619,7 +619,7 @@ class JsMacroImpl(val c: blackbox.Context) {
           case obj @ $json.JsObject(_) => obj.value.get($configName.discriminator) match {
              case Some(tjs) => {
                val vjs = obj.value.get("_value").getOrElse(obj)
-               tjs.validate[String].flatMap { dis => $cases }
+               tjs.validate[_root_.java.lang.String].flatMap { dis => $cases }
              }
 
              case _ => $json.JsError($JsPath \ $configName.discriminator, "error.missing.path")
