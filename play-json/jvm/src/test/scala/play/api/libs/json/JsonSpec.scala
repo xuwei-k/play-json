@@ -632,4 +632,50 @@ class JsonSpec extends org.specs2.mutable.Specification {
     }
     ok
   }
+
+  "sortEntriesByKeys" in {
+    val json = Json.obj(
+      "a2" -> 2,
+      "a1" -> Json.obj(
+        "b2" -> 1.5,
+        "b1" -> Seq(true)
+      ),
+      "a3" -> false,
+    )
+    withJsonConfig(
+      JsonConfig()
+    ) { () =>
+      val expect =
+        """|{
+           |  "a2" : 2,
+           |  "a1" : {
+           |    "b2" : 1.5,
+           |    "b1" : [ true ]
+           |  },
+           |  "a3" : false
+           |}""".stripMargin
+      val actual = Json.prettyPrint(json)
+      actual.mustEqual(expect)
+    }
+    withJsonConfig(
+      JsonConfig(
+        bigDecimalParseConfig = JsonConfig.settings.bigDecimalParseConfig,
+        bigDecimalSerializerConfig = JsonConfig.settings.bigDecimalSerializerConfig,
+        streamReadConstraints = JsonConfig.settings.streamReadConstraints,
+        sortEntriesByKeys = true
+      )
+    ) { () =>
+      val expect =
+        """|{
+           |  "a1" : {
+           |    "b1" : [ true ],
+           |    "b2" : 1.5
+           |  },
+           |  "a2" : 2,
+           |  "a3" : false
+           |}""".stripMargin
+      val actual = Json.prettyPrint(json)
+      actual.mustEqual(expect)
+    }
+  }
 }

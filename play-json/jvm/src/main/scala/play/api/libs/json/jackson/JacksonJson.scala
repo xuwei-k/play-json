@@ -118,7 +118,8 @@ private[jackson] class JsValueSerializer(jsonConfig: JsonConfig) extends JsonSer
 
       case JsObject(values) => {
         json.writeStartObject()
-        values.foreach { t =>
+        val xs = if (jsonConfig.sortEntriesByKeys) values.toSeq.sortBy(_._1) else values
+        xs.foreach { t =>
           json.writeFieldName(t._1)
           serialize(t._2, json, provider)
         }

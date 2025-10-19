@@ -106,6 +106,7 @@ sealed trait JsonConfig {
   def bigDecimalParseConfig: BigDecimalParseConfig
   def bigDecimalSerializerConfig: BigDecimalSerializerConfig
   def streamReadConstraints: StreamReadConstraints
+  def sortEntriesByKeys: Boolean
 }
 
 object JsonConfig {
@@ -223,20 +224,35 @@ object JsonConfig {
       defaultStreamReadConstraints
     )
 
+  private def sortEntriesByKeysDefault: Boolean = false
+
   def apply(): JsonConfig = apply(BigDecimalParseConfig(), BigDecimalSerializerConfig())
 
   def apply(
       bigDecimalParseConfig: BigDecimalParseConfig,
       bigDecimalSerializerConfig: BigDecimalSerializerConfig
   ): JsonConfig =
-    JsonConfigImpl(bigDecimalParseConfig, bigDecimalSerializerConfig, defaultStreamReadConstraints)
+    JsonConfigImpl(
+      bigDecimalParseConfig,
+      bigDecimalSerializerConfig,
+      defaultStreamReadConstraints,
+      sortEntriesByKeysDefault
+    )
 
   def apply(
       bigDecimalParseConfig: BigDecimalParseConfig,
       bigDecimalSerializerConfig: BigDecimalSerializerConfig,
       streamReadConstraints: StreamReadConstraints
   ): JsonConfig =
-    JsonConfigImpl(bigDecimalParseConfig, bigDecimalSerializerConfig, streamReadConstraints)
+    JsonConfigImpl(bigDecimalParseConfig, bigDecimalSerializerConfig, streamReadConstraints, sortEntriesByKeysDefault)
+
+  def apply(
+      bigDecimalParseConfig: BigDecimalParseConfig,
+      bigDecimalSerializerConfig: BigDecimalSerializerConfig,
+      streamReadConstraints: StreamReadConstraints,
+      sortEntriesByKeys: Boolean
+  ): JsonConfig =
+    JsonConfigImpl(bigDecimalParseConfig, bigDecimalSerializerConfig, streamReadConstraints, sortEntriesByKeys)
 
   private[json] def parseMathContext(key: String): MathContext = sys.props.get(key).map(_.toLowerCase) match {
     case Some("decimal128") => MathContext.DECIMAL128
@@ -257,7 +273,8 @@ object JsonConfig {
 private final case class JsonConfigImpl(
     bigDecimalParseConfig: BigDecimalParseConfig,
     bigDecimalSerializerConfig: BigDecimalSerializerConfig,
-    streamReadConstraints: StreamReadConstraints
+    streamReadConstraints: StreamReadConstraints,
+    sortEntriesByKeys: Boolean
 ) extends JsonConfig
 
 @deprecated("Use BigDecimalParseConfig instead", "2.9.4")
@@ -284,6 +301,8 @@ final case class JsonParserSettings(
   override def bigDecimalParseConfig: BigDecimalParseConfig = bigDecimalParseSettings
 
   override def bigDecimalSerializerConfig: BigDecimalSerializerConfig = bigDecimalSerializerSettings
+
+  override def sortEntriesByKeys: Boolean = false
 }
 
 object JsonParserSettings {
